@@ -19,4 +19,12 @@ describe("import parser", () => {
     expect(result.errors).toHaveLength(1);
     expect(result.errors[0].row).toBe(3);
   });
+
+  it("accepts the documented English import headers used by spreadsheets", () => {
+    const result = mapImportRows([
+      { platform: "wechat", account: "Daniel", title: "English header", date: "2026-08-08" },
+    ], "contents");
+    expect(result.errors).toEqual([]);
+    expect(result.valid[0]).toMatchObject({ title: "English header", platform: "wechat", accountName: "Daniel" });
+  });
 });

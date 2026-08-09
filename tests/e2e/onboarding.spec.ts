@@ -38,15 +38,20 @@ test("local empty state never presents demo metrics as real data", async ({ page
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
 
-test("every onboarding choice returns a visible next-step boundary", async ({ page }) => {
-  for (const [button, notice] of [
-    [/连接飞书/, "OAuth 接入将在数据同步里程碑启用"],
-    [/导入 Excel \/ CSV/, "字段映射与预览将在导入里程碑启用"],
-    [/手动创建第一条记录/, "账号与内容表单将在下一里程碑启用"],
-  ] as const) {
-    await page.getByRole("button", { name: button }).click();
-    await expect(page.getByRole("status")).toContainText(notice);
-  }
+test("every onboarding choice opens the corresponding real workflow", async ({ page }) => {
+  await page.getByRole("button", { name: /导入 Excel \/ CSV/ }).click();
+  await expect(page.getByRole("heading", { name: "数据导入与同步" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "预览数据" })).toBeVisible();
+
+  await page.getByRole("button", { name: "经营总览" }).click();
+  await page.getByRole("button", { name: /手动创建第一条记录/ }).click();
+  await expect(page.getByRole("heading", { name: "账号资产" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "添加账号" })).toBeVisible();
+
+  await page.getByRole("button", { name: "经营总览" }).click();
+  await page.getByRole("button", { name: /连接飞书/ }).click();
+  await expect(page.getByRole("heading", { name: "数据导入与同步" })).toBeVisible();
+  await expect(page.getByText(/飞书连接器暂未启用/)).toBeVisible();
 });
 
 test("local onboarding meets automated WCAG checks", async ({ page }) => {

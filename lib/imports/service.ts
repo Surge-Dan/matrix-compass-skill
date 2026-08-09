@@ -24,11 +24,15 @@ export async function commitImport(database: DatabaseClient, preview: ReturnType
     const finance = createFinanceRepository(database);
     for (const row of preview.valid) {
       const platform = String(row.platform);
-      const accountName = String(row.accountName);
+      const accountName = String(preview.target === "accounts" ? row.name : row.accountName);
       let account = await accounts.findByPlatformName(platform, accountName);
       if (!account) {
         const input = validateAccountInput({ platform, name: accountName });
         account = await accounts.insert({ id: crypto.randomUUID(), ...input, importBatchId: batchId, createdAt: timestamp, updatedAt: timestamp });
+      }
+      if (preview.target === "accounts") {
+        successRows += 1;
+        continue;
       }
       if (preview.target === "contents") {
         const content = validateContentInput({ accountId: account.id, title: String(row.title), contentType: typeof row.contentType === "string" ? row.contentType : null, stage: String(row.stage), plannedAt: typeof row.plannedAt === "string" ? row.plannedAt : null, publishedAt: typeof row.publishedAt === "string" ? row.publishedAt : null });
@@ -39,6 +43,7 @@ export async function commitImport(database: DatabaseClient, preview: ReturnType
       }
       successRows += 1;
     }
+    if (successRows === 0) throw new Error("没有可写入的有效行。");
     await database.prepare("UPDATE import_batches SET status = 'committed', success_rows = ?, completed_at = ? WHERE id = ?").bind(successRows, new Date().toISOString(), batchId).run();
     return { batchId, status: "committed", totalRows: preview.totalRows, successRows, failedRows: preview.errors.length };
   } catch (error) {

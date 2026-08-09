@@ -34,6 +34,26 @@ export function parseCsvRows(text: string) {
 
 function mapPlatform(value: string) { return validateAccountInput({ platform: value, name: "import" }).platform; }
 
+function pick(row: Record<string, string>, ...keys: string[]) {
+  for (const key of keys) {
+    const value = row[key];
+    if (typeof value === "string" && value.trim()) return value.trim();
+  }
+  return "";
+}
+
+function toDateTime(value: string) {
+  if (!value) return null;
+  return value.includes("T") || /Z$|[+-]\d{2}:\d{2}$/.test(value) ? value : `${value}T00:00:00+08:00`;
+}
+
+function mapStage(value: string) {
+  const normalized = value.toLocaleLowerCase("zh-CN");
+  if (["已发布", "published", "done"].includes(normalized)) return "published" as const;
+  if (["草稿", "draft"].includes(normalized)) return "draft" as const;
+  return "scheduled" as const;
+}
+
 export function mapImportRows(rows: Record<string, string>[], target: ImportTarget) {
   const valid: Record<string, unknown>[] = [];
   const errors: ImportError[] = [];
@@ -41,28 +61,28 @@ export function mapImportRows(rows: Record<string, string>[], target: ImportTarg
     const rowNumber = index + 2;
     try {
       if (target === "accounts") {
-        const account = validateAccountInput({ platform: row["平台"], name: row["账号"] || row["账号名称"] });
+        const account = validateAccountInput({ platform: pick(row, "平台", "platform", "Platform"), name: pick(row, "账号", "账号名称", "account", "account_name", "name") });
         valid.push(account);
       } else if (target === "contents") {
-        const platform = mapPlatform(row["平台"]);
-        const accountName = (row["账号"] || row["账号名称"] || "").trim();
-        const title = row["内容主题"] || row["标题"];
-        const plannedAt = row["发布时间"] || row["发布日期"];
-        const stage = row["发布状态"] === "已发布" ? "published" : "scheduled";
-        const content = validateContentInput({ title, accountId: `${platform}:${accountName}`, plannedAt: plannedAt ? `${plannedAt}T00:00:00+08:00` : null, stage });
+        const platform = mapPlatform(pick(row, "平台", "platform", "Platform"));
+        const accountName = pick(row, "账号", "账号名称", "account", "account_name", "name");
+        const title = pick(row, "内容主题", "标题", "title", "content_title");
+        const plannedAt = toDateTime(pick(row, "发布时间", "发布日期", "date", "planned_at", "publish_date"));
+        const stage = mapStage(pick(row, "发布状态", "stage", "status"));
+        const content = validateContentInput({ title, accountId: `${platform}:${accountName}`, plannedAt, stage });
         valid.push({ ...content, platform, accountName });
       } else {
-        const platform = mapPlatform(row["平台"]);
-        const accountName = (row["账号"] || row["账号名称"] || "").trim();
+        const platform = mapPlatform(pick(row, "平台", "platform", "Platform"));
+        const accountName = pick(row, "账号", "账号名称", "account", "account_name", "name");
         const input = validateFinanceInput({
           accountId: `${platform}:${accountName}`,
-          direction: row["收支方向"] || row["方向"] || "income",
-          category: row["收入类型"] || row["类型"] || "other",
-          amountMinor: Math.round(Number(row["金额"] || row["收入金额"] || 0) * 100),
-          currency: row["币种"] || "CNY",
-          occurredAt: `${row["发生日期"] || row["日期"]}T00:00:00+08:00`,
-          settlementStatus: row["结算状态"] || "pending",
-          settledAmountMinor: Math.round(Number(row["已结算金额"] || 0) * 100),
+          direction: pick(row, "收支方向", "方向", "direction") || "income",
+          category: pick(row, "收入类型", "类型", "category") || "other",
+          amountMinor: Math.round(Number(pick(row, "金额", "收入金额", "amount")) * 100),
+          currency: pick(row, "币种", "currency") || "CNY",
+          occurredAt: toDateTime(pick(row, "发生日期", "日期", "occurred_at", "date")) ?? "",
+          settlementStatus: pick(row, "结算状态", "settlement_status") || "pending",
+          settledAmountMinor: Math.round(Number(pick(row, "已结算金额", "settled_amount")) * 100),
         });
         valid.push({ ...input, platform, accountName });
       }

@@ -45,6 +45,8 @@ npm run db:migrate
 
 浏览器打开 `http://127.0.0.1:3000`；局域网模式打开终端显示的局域网地址。进入“数据导入与同步”即可粘贴 CSV 或上传 XLSX（旧版 XLS 请先另存为 XLSX/CSV），预览通过后再提交。
 
+注意：这个地址只在启动脚本保持运行时可用；关闭 PowerShell 窗口或结束 Node 进程后，浏览器会显示“无法连接”。再次执行 `start.ps1` 即可恢复。启动脚本会自动检查 `node_modules`，缺失时用已选中的兼容 Node.js 版本执行 `npm ci`。
+
 ## 数据格式
 
 内容导入至少需要：`platform,account,title,date`。

@@ -18,5 +18,5 @@ export async function createExperimentsResponse(request: Request, database: Data
 }
 async function loadWorkerBindings() { const { env } = await import("cloudflare:workers"); return env as unknown as RuntimeEnvironment & { DB?: DatabaseClient }; }
 async function configured(request: Request) { const bindings = await loadRuntimeEnvironment(loadWorkerBindings, process.env); const runtime = resolveRuntimeConfig(bindings, process.env.NODE_ENV); return createExperimentsResponse(request, runtime.mode === "demo" ? undefined : (bindings as RuntimeEnvironment & { DB?: DatabaseClient }).DB, `mc-${crypto.randomUUID()}`); }
-export async function GET(request: Request, database?: DatabaseClient) { return database ? createExperimentsResponse(request, database, `mc-${crypto.randomUUID()}`) : configured(request); }
-export async function POST(request: Request, database?: DatabaseClient) { return database ? createExperimentsResponse(request, database, `mc-${crypto.randomUUID()}`) : configured(request); }
+export async function GET(request: Request) { return configured(request); }
+export async function POST(request: Request) { return configured(request); }

@@ -38,6 +38,6 @@ export async function createImportCommitResponse(request: Request, database?: Da
   }
 }
 
-export async function POST(request: Request, database?: DatabaseClient) { return database ? createImportCommitResponse(request, database) : configured(request); }
+export async function POST(request: Request) { return configured(request); }
 async function loadWorkerBindings() { const { env } = await import("cloudflare:workers"); return env as unknown as Record<string, string | undefined> & { DB?: DatabaseClient }; }
 async function configured(request: Request) { const bindings = await loadRuntimeEnvironment(loadWorkerBindings, process.env); return createImportCommitResponse(request, (bindings as { DB?: DatabaseClient }).DB); }

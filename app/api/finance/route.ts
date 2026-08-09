@@ -22,8 +22,8 @@ export async function createFinanceResponse(request: Request, database: Database
   }
 }
 
-export async function GET(request: Request, database?: DatabaseClient) { return database ? createFinanceResponse(request, database, `mc-${crypto.randomUUID()}`) : configured(request); }
-export async function POST(request: Request, database?: DatabaseClient) { return database ? createFinanceResponse(request, database, `mc-${crypto.randomUUID()}`) : configured(request); }
+export async function GET(request: Request) { return configured(request); }
+export async function POST(request: Request) { return configured(request); }
 
 async function loadWorkerBindings() { const { env } = await import("cloudflare:workers"); return env as unknown as Record<string, string | undefined> & { DB?: DatabaseClient }; }
 async function configured(request: Request) {

@@ -23,6 +23,12 @@ $checks = [ordered]@{
   WranglerConfig = Test-Path -LiteralPath (Join-Path $resolvedProject "wrangler.local.jsonc")
   Migration = Test-Path -LiteralPath (Join-Path $resolvedProject "db\migrations\0001_initial.sql")
 }
+$checks.Dependencies = @(
+  (Join-Path $resolvedProject "node_modules\.bin\tsx.cmd"),
+  (Join-Path $resolvedProject "node_modules\vite\package.json"),
+  (Join-Path $resolvedProject "node_modules\wrangler\package.json")
+) | ForEach-Object { Test-Path -LiteralPath $_ -PathType Leaf } | Where-Object { -not $_ } | Measure-Object | Select-Object -ExpandProperty Count
+$checks.Dependencies = [bool]($checks.Dependencies -eq 0)
 $checks.DataPath = Set-MatrixCompassDataPath -DataPath $DataPath -ProjectPath $resolvedProject
 
 $coreHealthy = -not ($checks.Values -contains $false)

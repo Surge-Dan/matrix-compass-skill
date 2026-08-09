@@ -10,12 +10,6 @@ interface BootstrapResponse {
   error?: { message?: string; requestId?: string };
 }
 
-const ACTION_NOTICES: Record<BootstrapData["actions"][number], string> = {
-  "connect-feishu": "已选择连接飞书；OAuth 接入将在数据同步里程碑启用。",
-  "import-file": "已选择文件导入；字段映射与预览将在导入里程碑启用。",
-  "create-manually": "已选择手动创建；账号与内容表单将在下一里程碑启用。",
-};
-
 export function OperationsApp() {
   const [data, setData] = useState<BootstrapData | null>(null);
   const [activePage, setActivePage] = useState<OperationsPage>("overview");
@@ -68,7 +62,15 @@ export function OperationsApp() {
       activePage={activePage}
       notice={notice}
       onNavigate={(page) => { setActivePage(page); setNotice(null); }}
-      onAction={(action) => setNotice(ACTION_NOTICES[action])}
+      onAction={(action) => {
+        if (action === "create-manually") {
+          setActivePage("accounts");
+          setNotice(null);
+          return;
+        }
+        setActivePage("sources");
+        setNotice(action === "connect-feishu" ? "飞书连接器暂未启用；你可以先在这里导入飞书多维表格导出的 CSV/XLSX。" : null);
+      }}
     />
   );
 }

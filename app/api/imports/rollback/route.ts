@@ -14,9 +14,7 @@ export async function createImportRollbackResponse(request: Request, database?: 
   }
 }
 
-export async function POST(request: Request, database?: DatabaseClient) {
-  return database ? createImportRollbackResponse(request, database) : configured(request);
-}
+export async function POST(request: Request) { return configured(request); }
 
 async function loadWorkerBindings() {
   const { env } = await import("cloudflare:workers");

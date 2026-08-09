@@ -35,5 +35,7 @@ export async function createConfiguredAccountsResponse(request: Request, loadBin
   return createAccountsResponse(request, (bindings as RuntimeEnvironment & { DB?: DatabaseClient }).DB, `mc-${crypto.randomUUID()}`);
 }
 
-export async function GET(request: Request, database?: DatabaseClient) { return database ? createAccountsResponse(request, database, `mc-${crypto.randomUUID()}`) : createConfiguredAccountsResponse(request); }
-export async function POST(request: Request, database?: DatabaseClient) { return database ? createAccountsResponse(request, database, `mc-${crypto.randomUUID()}`) : createConfiguredAccountsResponse(request); }
+export async function GET(request: Request) { return createConfiguredAccountsResponse(request); }
+export async function POST(request: Request) { return createConfiguredAccountsResponse(request); }
+export async function PATCH(request: Request) { return createConfiguredAccountsResponse(request); }
+export async function DELETE(request: Request) { return createConfiguredAccountsResponse(request); }

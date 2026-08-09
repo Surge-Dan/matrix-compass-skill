@@ -60,6 +60,29 @@ test("new navigation contains the confirmed operations modules", async () => {
   assert.match(html, /演示模式/);
 });
 
+test("real data modules expose Chinese action labels", async () => {
+  const { OperationsView } = await import(
+    `../components/app/operations-view.tsx?test=${Date.now()}-${Math.random()}`
+  );
+  const html = renderToStaticMarkup(
+    React.createElement(OperationsView, {
+      data: {
+        mode: "local",
+        source: "local-d1",
+        readOnly: false,
+        needsOnboarding: false,
+        counts: { accounts: 0, contents: 0 },
+        metrics: null,
+        actions: ["connect-feishu", "import-file", "create-manually"],
+      },
+      activePage: "sources",
+    }),
+  );
+  assert.match(html, /预览数据/);
+  assert.match(html, /导入目标/);
+  assert.match(html, /上传 CSV 或 XLSX/);
+});
+
 test("non-empty local data never fabricates financial metrics", async () => {
   const { OperationsView } = await import(
     `../components/app/operations-view.tsx?test=${Date.now()}-${Math.random()}`

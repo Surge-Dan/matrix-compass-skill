@@ -297,9 +297,15 @@ button:focus-visible, a:focus-visible { outline:3px solid rgba(200,93,61,.45); o
 .module-header p:last-child { margin:10px 0 0; color:var(--muted); font-size:12px; line-height:1.7; }
 .module-form { display:flex; flex-wrap:wrap; gap:10px; align-items:center; padding:14px; border:1px solid var(--line); border-radius:14px; background:var(--surface); }
 .module-form input, .module-form select, .import-textarea { min-height:42px; padding:0 12px; border:1px solid var(--line); border-radius:9px; color:var(--ink); background:white; font-size:12px; }
+.module-form input[type=file] { display:none; }
 .module-form input:focus, .module-form select:focus, .import-textarea:focus { border-color:var(--coral); outline:2px solid rgba(157,66,45,.15); }
 .module-form .primary-action, .module-form .secondary-action { min-height:42px; }
 .secondary-action { min-height:42px; padding:0 15px; border:1px solid var(--line); border-radius:9px; background:white; cursor:pointer; }
+.danger-action { min-height:42px; padding:0 15px; border:1px solid #e7b3a4; border-radius:9px; color:#9d422d; background:#fff5f1; cursor:pointer; }
+.field-label { color:var(--muted); font-size:11px; }
+.file-picker { display:inline-flex; min-height:42px; align-items:center; padding:0 12px; border:1px dashed var(--coral); border-radius:9px; color:var(--coral); background:#fffaf7; font-size:11px; cursor:pointer; }
+.module-hint { margin:0; color:var(--muted); font-size:11px; line-height:1.7; }
+.module-hint code { padding:2px 4px; border-radius:4px; background:#f3eee7; color:var(--ink); font-family:ui-monospace,Consolas,monospace; }
 .module-error, .error-text { color:#9d422d; font-size:11px; }
 .module-subtitle { margin:1.5rem 0 .75rem; font-size:1.05rem; }
 .operations-live-summary { display:flex; gap:1rem; flex-wrap:wrap; align-items:center; margin:1rem 0; padding:.85rem 1rem; border:1px solid var(--line); border-radius:12px; background:#fffaf3; }
@@ -331,7 +337,7 @@ button:focus-visible, a:focus-visible { outline:3px solid rgba(200,93,61,.45); o
 @media (max-width:767px) {
   .module-header { display:block; }
   .module-form { align-items:stretch; }
-  .module-form input, .module-form select, .module-form button { width:100%; }
+  .module-form input, .module-form select, .module-form button, .module-form .file-picker { width:100%; }
   .module-row { grid-template-columns:1fr 1fr; gap:6px 12px; }
   .module-row strong { grid-column:1 / -1; }
   .calendar-grid, .finance-summary, .settings-grid { grid-template-columns:1fr; }

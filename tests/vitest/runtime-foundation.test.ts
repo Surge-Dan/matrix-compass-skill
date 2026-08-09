@@ -238,6 +238,16 @@ describe("health contract", () => {
         { MATRIX_COMPASS_MODE: "demo" },
       ),
     ).rejects.toThrow("binding bootstrap failed");
+
+    const missingWorkerModule = Object.assign(new Error("Cannot find package cloudflare:workers"), {
+      code: "ERR_MODULE_NOT_FOUND",
+    });
+    await expect(
+      loadRuntimeEnvironment(async () => Promise.reject(missingWorkerModule), { MATRIX_COMPASS_MODE: "local" }),
+    ).resolves.toEqual({ MATRIX_COMPASS_MODE: "local" });
+    await expect(
+      loadRuntimeEnvironment(async () => Promise.reject({ code: "ERR_MODULE_NOT_FOUND" }), { MATRIX_COMPASS_MODE: "local" }),
+    ).rejects.toMatchObject({ code: "ERR_MODULE_NOT_FOUND" });
   });
 
   it("uses the Worker runtime binding instead of the host process default", async () => {

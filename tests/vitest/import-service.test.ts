@@ -4,6 +4,27 @@ import { createTestDatabase, migrateToV2, readMigration } from "../helpers/d1";
 import { applyVersionedMigrationSql } from "../../db/migrate";
 
 describe("import service", () => {
+  it("imports account rows with their actual account name", async () => {
+    const { miniflare, database } = await createTestDatabase();
+    await migrateToV2(database);
+    await applyVersionedMigrationSql(database, await readMigration("0003_operations_modules.sql"), 3);
+    await applyVersionedMigrationSql(database, await readMigration("0004_import_lineage.sql"), 4);
+    const preview = previewImport("platform,account\nwechat,Daniel", "accounts");
+    await expect(commitImport(database, preview)).resolves.toMatchObject({ status: "committed", successRows: 1 });
+    await expect(database.prepare("SELECT platform, name FROM accounts WHERE deleted_at IS NULL").all()).resolves.toMatchObject({ results: [{ platform: "wechat", name: "Daniel" }] });
+    await miniflare.dispose();
+  });
+
+  it("does not report a successful batch when every row is invalid", async () => {
+    const { miniflare, database } = await createTestDatabase();
+    await migrateToV2(database);
+    await applyVersionedMigrationSql(database, await readMigration("0003_operations_modules.sql"), 3);
+    await applyVersionedMigrationSql(database, await readMigration("0004_import_lineage.sql"), 4);
+    const preview = previewImport("platform,account\nunknown,", "accounts");
+    await expect(commitImport(database, preview)).rejects.toThrow("没有可写入的有效行");
+    await miniflare.dispose();
+  });
+
   it("previews and commits content rows as one local batch", async () => {
     const { miniflare, database } = await createTestDatabase();
     await migrateToV2(database);

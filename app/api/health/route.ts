@@ -45,9 +45,9 @@ export async function loadRuntimeEnvironment(
   try {
     return await loadWorkerEnvironment();
   } catch (error) {
-    if (
-      Reflect.get(Object(error), "code") === "ERR_UNSUPPORTED_ESM_URL_SCHEME"
-    ) {
+    const code = Reflect.get(Object(error), "code");
+    const message = String(Reflect.get(Object(error), "message") ?? error);
+    if (code === "ERR_UNSUPPORTED_ESM_URL_SCHEME" || (code === "ERR_MODULE_NOT_FOUND" && message.includes("cloudflare:workers"))) {
       return fallbackEnvironment;
     }
     throw error;
