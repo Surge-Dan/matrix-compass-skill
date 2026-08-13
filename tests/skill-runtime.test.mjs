@@ -257,3 +257,19 @@ test("autostart can install and remove a per-user login launcher without admin a
   assert.equal(uninstall.status, 0, uninstall.stderr || uninstall.stdout);
   assert.equal(await exists(launcher), false);
 });
+
+test("installation keeps auto-start opt-in instead of changing login behavior silently", async () => {
+  const installSource = await readFile(
+    path.join(repositoryRoot, "skill", "matrix-compass", "scripts", "install.ps1"),
+    "utf8",
+  );
+  const readme = await readFile(path.join(repositoryRoot, "README.md"), "utf8");
+  assert.match(installSource, /\[switch\]\$AutoStart/);
+  assert.match(installSource, /if \(\$AutoStart\)/);
+  const defaultInstallLine = readme
+    .split(/\r?\n/)
+    .find((line) => line.includes("scripts\\install.ps1") && line.includes("-TargetPath"));
+  assert.ok(defaultInstallLine);
+  assert.doesNotMatch(defaultInstallLine, /-AutoStart/);
+  assert.match(readme, /autostart\.ps1.*-Action install/);
+});

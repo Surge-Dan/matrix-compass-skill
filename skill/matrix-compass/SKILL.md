@@ -32,7 +32,9 @@ compatibility: Windows PowerShell, Git, Node.js 22.13+, npm
 
 启动脚本会自动检查依赖；首次运行或依赖目录不完整时，会使用 Skill 选中的 Node.js 22.13+ 执行锁定安装。浏览器地址只在启动进程存活期间有效，关闭终端后请重新执行 `start.ps1`。
 
-安装时加 `-AutoStart`，或对已有安装执行 `autostart.ps1 -Action install`，可让 Windows 登录后自动静默启动本地服务。它使用当前用户启动目录，不需要管理员权限；启动前会检查 `/api/health`，服务已运行时不会重复拉起。取消使用 `-Action uninstall`，查看状态使用 `-Action status`。
+安全边界：安装或配置前，必须先向用户明确询问是否允许“Windows 登录后自动启动”。用户没有明确同意时，不得传入 `-AutoStart`，也不得执行 `autostart.ps1 -Action install`。默认安装不会改变登录行为。
+
+用户明确同意后，才可执行 `autostart.ps1 -Action install`。它使用当前用户启动目录，不需要管理员权限；启动前会检查 `/api/health`，服务已运行时不会重复拉起。取消使用 `-Action uninstall`，查看状态使用 `-Action status`。
 
 ## 数据工作流
 
