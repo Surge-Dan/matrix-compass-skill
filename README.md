@@ -6,6 +6,7 @@
 ![Import](https://img.shields.io/badge/Import-CSV%20%7C%20XLSX-2E7D32?style=flat-square)
 ![Responsive](https://img.shields.io/badge/UI-Desktop%20%2B%20Mobile-7B61FF?style=flat-square)
 ![Security](https://img.shields.io/badge/Security-No%20cloud%20credentials-C0392B?style=flat-square)
+![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)
 
 <p align="center"><strong>把创作者的内容、日程和收入，变成一套真正能每天使用的本地经营系统</strong></p>
 
@@ -261,3 +262,9 @@ matrix-compass/
 欢迎提交Issue或PullRequest。提交问题时，请提供复现步骤、诊断输出和脱敏后的字段示例；不要上传真实账号Cookie、API密钥或未经脱敏的经营数据。
 
 如果这个项目帮你把分散的经营记录收拢起来，欢迎点一个⭐，这会帮助更多创作者发现它。
+
+## 许可证
+
+本项目采用MIT许可证，完整文本见[`LICENSE`](./LICENSE)。你可以自由使用、复制、修改、合并、发布、分发、再许可和销售本项目，但必须保留版权声明和许可证文本。项目按“现状”提供，不提供明示或默示担保。
+
+许可证仅适用于本项目拥有版权的代码和文档。第三方依赖、字体、图标、图片、示例数据和外部资源仍须遵守各自的许可证。
