@@ -273,3 +273,19 @@ test("installation keeps auto-start opt-in instead of changing login behavior si
   assert.doesNotMatch(defaultInstallLine, /-AutoStart/);
   assert.match(readme, /autostart\.ps1.*-Action install/);
 });
+
+test("the first-run setup flow starts, health-checks, and opens the local app while keeping auto-start opt-in", async () => {
+  const scriptDirectory = path.join(repositoryRoot, "skill", "matrix-compass", "scripts");
+  const setupSource = await readFile(path.join(scriptDirectory, "setup.ps1"), "utf8").catch(() => "");
+  const installSource = await readFile(path.join(scriptDirectory, "install.ps1"), "utf8");
+  const skillSource = await readFile(path.join(repositoryRoot, "skill", "matrix-compass", "SKILL.md"), "utf8");
+
+  assert.notEqual(setupSource, "", "setup.ps1 must exist for the simple first-run path");
+  assert.match(setupSource, /api\/health/);
+  assert.match(setupSource, /Start-Process/);
+  assert.match(setupSource, /127\.0\.0\.1:3000/);
+  assert.match(setupSource, /AutoStart/);
+  assert.match(installSource, /setup\.ps1/);
+  assert.match(skillSource, /安装并启动|一键/);
+  assert.match(skillSource, /明确同意/);
+});

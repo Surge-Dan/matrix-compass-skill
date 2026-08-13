@@ -41,8 +41,11 @@ try {
   Pop-Location
 }
 if ($AutoStart) {
-  & (Join-Path $PSScriptRoot "autostart.ps1") -ProjectPath $resolvedTarget -DataPath $resolvedData -Action install
-  if ($LASTEXITCODE -ne 0) { throw "Auto-start setup failed." }
+  $setupArguments = @("-ProjectPath", $resolvedTarget, "-DataPath", $resolvedData, "-AutoStart")
+} else {
+  $setupArguments = @("-ProjectPath", $resolvedTarget, "-DataPath", $resolvedData)
 }
+& (Join-Path $resolvedTarget "skill\matrix-compass\scripts\setup.ps1") @setupArguments
+if ($LASTEXITCODE -ne 0) { throw "Matrix Compass setup failed." }
 Write-Output "Matrix Compass installed: $resolvedTarget"
 Write-Output "Matrix Compass data directory: $resolvedData"
