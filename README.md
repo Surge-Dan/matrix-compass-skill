@@ -7,7 +7,7 @@
 ![Responsive](https://img.shields.io/badge/UI-Desktop%20%2B%20Mobile-7B61FF?style=flat-square)
 ![Security](https://img.shields.io/badge/Security-No%20cloud%20credentials-C0392B?style=flat-square)
 
-**把创作者的内容、日程和收入，变成一套真正能每天使用的本地经营系统。**
+**把创作者的内容、日程和收入，变成一套真正能每天使用的本地经营系统**
 
 Matrix Compass不是一个只展示漂亮数字的看板，也不是把飞书表格换成另一张表格。它更像一个安静、可靠、可回溯的经营工作台：你可以手动记录，也可以导入CSV/XLSX；可以安排下一篇内容，也可以复盘上一笔收入；数据始终留在你明确选择的本机目录里。
 
