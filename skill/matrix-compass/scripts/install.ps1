@@ -2,7 +2,8 @@ param(
   [Parameter(Mandatory = $true)]
   [string]$TargetPath,
   [Parameter(Mandatory = $true)]
-  [string]$DataPath
+  [string]$DataPath,
+  [switch]$AutoStart
 )
 
 $ErrorActionPreference = "Stop"
@@ -38,6 +39,10 @@ try {
   if ($LASTEXITCODE -ne 0) { throw "Initial local database migration failed." }
 } finally {
   Pop-Location
+}
+if ($AutoStart) {
+  & (Join-Path $PSScriptRoot "autostart.ps1") -ProjectPath $resolvedTarget -DataPath $resolvedData -Action install
+  if ($LASTEXITCODE -ne 0) { throw "Auto-start setup failed." }
 }
 Write-Output "Matrix Compass installed: $resolvedTarget"
 Write-Output "Matrix Compass data directory: $resolvedData"

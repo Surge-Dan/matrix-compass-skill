@@ -228,3 +228,32 @@ test("the release quality gate includes the Skill runtime regression suite", asy
   assert.equal(packageJson.scripts["test:skill"], "node --test tests/skill-runtime.test.mjs");
   assert.match(packageJson.scripts["test:quality"], /npm run test:skill/);
 });
+
+test("autostart can install and remove a per-user login launcher without admin access", async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "matrix-compass-autostart-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const project = path.join(root, "project");
+  const data = path.join(root, "data");
+  const startup = path.join(root, "Startup");
+  await mkdir(project);
+  await mkdir(data);
+  const script = path.join(repositoryRoot, "skill", "matrix-compass", "scripts", "autostart.ps1");
+  const common = `-ProjectPath ${quotePowerShell(project)} -DataPath ${quotePowerShell(data)} -Action`;
+
+  const install = runPowerShell(
+    `$env:MATRIX_COMPASS_STARTUP_DIR = ${quotePowerShell(startup)}; & ${quotePowerShell(script)} ${common} install`,
+  );
+  assert.equal(install.status, 0, install.stderr || install.stdout);
+  const launcher = path.join(startup, "Matrix Compass.vbs");
+  assert.equal(await exists(launcher), true);
+  const source = await readFile(launcher, "utf16le");
+  assert.match(source, /autostart\.ps1/);
+  assert.match(source, /-Action\s+run/);
+  assert.match(source, /-WindowStyle Hidden/);
+
+  const uninstall = runPowerShell(
+    `$env:MATRIX_COMPASS_STARTUP_DIR = ${quotePowerShell(startup)}; & ${quotePowerShell(script)} ${common} uninstall`,
+  );
+  assert.equal(uninstall.status, 0, uninstall.stderr || uninstall.stdout);
+  assert.equal(await exists(launcher), false);
+});
