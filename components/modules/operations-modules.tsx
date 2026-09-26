@@ -7,7 +7,12 @@ type Account = { id: string; platform: string; name: string; status: string };
 type Content = { id: string; accountId: string; title: string; stage: string; plannedAt: string | null };
 type Finance = { id: string; direction: string; category: string; amountMinor: number; settlementStatus: string; occurredAt: string };
 type ApiBody<T> = { data: T; error?: { message?: string } };
-const platforms = [["wechat", "WeChat"], ["xiaohongshu", "Xiaohongshu"], ["douyin", "Douyin"], ["kuaishou", "Kuaishou"], ["bilibili", "Bilibili"]] as const;
+const platforms = [["wechat", "微信公众号"], ["xiaohongshu", "小红书"], ["douyin", "抖音"], ["kuaishou", "快手"], ["bilibili", "哔哩哔哩"]] as const;
+const connectionGuides = [
+  { name: "微信公众号", state: "官方授权", detail: "完成开发者授权后，按授权范围同步。" },
+  { name: "小红书", state: "导出导入", detail: "从创作中心导出后，增量导入本地库。" },
+  { name: "抖音", state: "官方经营授权", detail: "仅在获得对应经营数据授权后同步。" },
+] as const;
 const money = (minor: number) => new Intl.NumberFormat("zh-CN", { style: "currency", currency: "CNY" }).format(minor / 100);
 const navigationLabel = (page: OperationsPage) => OPERATIONS_NAVIGATION.find((item) => item.id === page)?.label ?? page;
 
@@ -20,7 +25,7 @@ async function api<T>(url: string, init?: RequestInit) {
 
 function Header({ title, description }: { title: string; description: string }) {
   const labels: Record<string, OperationsPage> = { Accounts: "accounts", "Content calendar": "calendar", "Content library": "contents", Income: "finance", "Import and sync": "sources", "Reviews and experiments": "reviews", Settings: "settings" };
-  return <div className="module-header"><div><p className="operations-eyebrow">REAL DATA WORKFLOW</p><h1>{labels[title] ? navigationLabel(labels[title]) : title}</h1><p>{description}</p></div></div>;
+  return <div className="module-header"><div><p className="operations-eyebrow">本地经营工作流</p><h1>{labels[title] ? navigationLabel(labels[title]) : title}</h1><p>{description}</p></div></div>;
 }
 
 function AccountsModule() {
@@ -51,7 +56,7 @@ function FinanceModule() {
 
 function ImportModule() {
   const [target, setTarget] = useState<"accounts" | "contents" | "finance">("contents");
-  const [text, setText] = useState("platform,account,title,date\nwechat,Daniel,AI review,2026-08-08");
+  const [text, setText] = useState("platform,account,title,date\nwechat,示例账号,示例作品,2026-08-08");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<{ totalRows: number; valid: unknown[]; errors: { row: number; message: string }[] } | null>(null);
   const [batch, setBatch] = useState<{ batchId: string; successRows: number; failedRows: number } | null>(null);
@@ -81,7 +86,7 @@ function ImportModule() {
     setBatch(null);
     setNotice("本批次已回滚，相关导入记录已从经营库隐藏。 ");
   };
-  return <section className="module-panel"><Header title="Import and sync" description="支持手动粘贴 CSV 或上传 XLSX；先预览校验，再确认写入本地库。" /><div className="module-form"><label className="field-label" htmlFor="import-target">导入目标</label><select id="import-target" aria-label="导入目标" value={target} onChange={(e) => { setTarget(e.target.value as typeof target); setPreview(null); }}><option value="accounts">账号资产</option><option value="contents">内容库</option><option value="finance">收入管理</option></select><label className="file-picker" htmlFor="import-file">上传 CSV 或 XLSX</label><input id="import-file" aria-label="上传文件" type="file" accept=".csv,.xlsx" onChange={(e) => { setFile(e.target.files?.[0] ?? null); setPreview(null); }} /><button type="button" className="secondary-action" onClick={() => { void (file ? upload("/api/imports/preview").then((data) => setPreview(data as typeof preview)) : previewManual()).catch((e) => setNotice(e.message)); }}>预览数据</button>{preview ? <button type="button" className="primary-action" onClick={() => { void commit().catch((e) => setNotice(e.message)); }}>确认写入</button> : null}{batch ? <button type="button" className="danger-action" onClick={() => { void rollback().catch((e) => setNotice(e.message)); }}>回滚本批次</button> : null}</div><p className="module-hint">字段示例：内容用 <code>platform,account,title,date</code>；收入用 <code>platform,account,direction,category,amount,occurred_at</code>。飞书多维表格可先导出 CSV/XLSX。</p><textarea aria-label="CSV 内容" className="import-textarea" value={text} onChange={(e) => setText(e.target.value)} />{preview ? <div className="import-preview"><span>总行数 {preview.totalRows}</span><span className="success-text">可写入 {preview.valid.length}</span><span className="error-text">错误 {preview.errors.length}</span>{preview.errors.map((error) => <p key={`${error.row}-${error.message}`}>第 {error.row} 行：{error.message}</p>)}</div> : null}{notice ? <p className="operations-notice" role="status">{notice}</p> : null}</section>;
+  return <section className="module-panel"><Header title="Import and sync" description="先预览校验，再确认写入；导入始终可按批次回滚。" /><div className="import-workflow"><div className="import-workflow-heading"><span>01</span><div><strong>先选数据来源</strong><p>支持飞书多维表格导出的 CSV / XLSX，也支持直接粘贴表格内容。</p></div></div><div className="module-form"><label className="field-label" htmlFor="import-target">导入目标</label><select id="import-target" aria-label="导入目标" value={target} onChange={(e) => { setTarget(e.target.value as typeof target); setPreview(null); }}><option value="accounts">账号资产</option><option value="contents">内容库</option><option value="finance">收入管理</option></select><label className="file-picker" htmlFor="import-file">上传 CSV 或 XLSX</label><input id="import-file" aria-label="上传文件" type="file" accept=".csv,.xlsx" onChange={(e) => { setFile(e.target.files?.[0] ?? null); setPreview(null); }} /><button type="button" className="secondary-action" onClick={() => { void (file ? upload("/api/imports/preview").then((data) => setPreview(data as typeof preview)) : previewManual()).catch((e) => setNotice(e.message)); }}>预览数据</button>{preview ? <button type="button" className="primary-action" onClick={() => { void commit().catch((e) => setNotice(e.message)); }}>确认写入</button> : null}{batch ? <button type="button" className="danger-action" onClick={() => { void rollback().catch((e) => setNotice(e.message)); }}>回滚本批次</button> : null}</div><div className="field-mapping"><strong>字段对应</strong><p>内容：<code>platform, account, title, date</code>；收入：<code>platform, account, direction, category, amount, occurred_at</code>。</p></div><textarea aria-label="CSV 内容" className="import-textarea" value={text} onChange={(e) => setText(e.target.value)} />{preview ? <div className="import-preview"><span>总行数 {preview.totalRows}</span><span className="success-text">可写入 {preview.valid.length}</span><span className="error-text">错误 {preview.errors.length}</span>{preview.errors.map((error) => <p key={`${error.row}-${error.message}`}>第 {error.row} 行：{error.message}</p>)}</div> : null}{notice ? <p className="operations-notice" role="status">{notice}</p> : null}</div><section className="connection-boundary" aria-label="平台连接方式"><header><div><p>连接边界</p><h2>平台数据如何进入</h2></div><span>只走官方路径</span></header><div className="connection-guide-grid">{connectionGuides.map((guide) => <article key={guide.name}><span>{guide.state}</span><strong>{guide.name}</strong><p>{guide.detail}</p></article>)}</div><p className="connection-boundary-note">仅使用官方授权或你主动导出的文件；不会读取浏览器 Cookie、模拟登录或绕过平台验证。</p></section></section>;
 }
 
 function ReviewModule() {
@@ -98,7 +103,38 @@ function ReviewModule() {
   return <section className="module-panel"><Header title="Reviews and experiments" description="Separate evidence, hypothesis and next action." /><div className="module-form"><select aria-label="Review account" value={accountId} onChange={(e) => setAccountId(e.target.value)}><option value="">Select account</option>{accounts.map((account) => <option key={account.id} value={account.id}>{account.name}</option>)}</select><input aria-label="Review title" placeholder="Review title" value={title} onChange={(e) => setTitle(e.target.value)} /><button type="button" className="primary-action" onClick={() => { void api("/api/reviews", { method: "POST", body: JSON.stringify({ title, accountId }) }).then(() => { setTitle(""); return load(); }); }}>Add review</button></div><div className="module-table">{items.map((item) => <div className="module-row" key={item.id}><strong>{item.title}</strong><span>{item.status}</span><span>{item.nextAction ?? "Next action pending"}</span></div>)}{items.length === 0 ? <p className="module-empty">No review yet.</p> : null}</div><h2 className="module-subtitle">Experiment registry</h2><div className="module-form"><input aria-label="Experiment name" placeholder="Experiment name" value={experiment.name} onChange={(e) => setExperiment({ ...experiment, name: e.target.value })} /><input aria-label="Experiment goal" placeholder="Goal" value={experiment.goal} onChange={(e) => setExperiment({ ...experiment, goal: e.target.value })} /><input aria-label="Experiment hypothesis" placeholder="Hypothesis" value={experiment.hypothesis} onChange={(e) => setExperiment({ ...experiment, hypothesis: e.target.value })} /><input aria-label="Experiment variable" placeholder="Variable" value={experiment.variable} onChange={(e) => setExperiment({ ...experiment, variable: e.target.value })} /><input aria-label="Experiment metric" placeholder="Primary metric" value={experiment.primaryMetric} onChange={(e) => setExperiment({ ...experiment, primaryMetric: e.target.value })} /><button type="button" className="secondary-action" onClick={() => { void api("/api/experiments", { method: "POST", body: JSON.stringify(experiment) }).then(() => { setExperiment({ name: "", goal: "", hypothesis: "", variable: "", primaryMetric: "" }); return load(); }); }}>Add experiment</button></div><div className="module-table">{experiments.map((item) => <div className="module-row" key={item.id}><strong>{item.name}</strong><span>{item.status}</span><span>{item.primaryMetric}</span></div>)}{experiments.length === 0 ? <p className="module-empty">No experiment yet.</p> : null}</div></section>;
 }
 
-function SettingsModule() { return <section className="module-panel"><Header title="Settings" description="Local runtime and data safety boundaries." /><div className="settings-grid"><article><span>Data location</span><strong>Local Matrix Compass directory</strong><small>Selected during Skill installation.</small></article><article><span>Runtime</span><strong>Local D1</strong><small>127.0.0.1 by default; LAN is explicit.</small></article><article><span>Recovery</span><strong>Automatic pre-migration backup</strong><small>Restore commands default to dry-run.</small></article></div></section>; }
+function SettingsModule() {
+  return (
+    <section className="module-panel">
+      <Header title="Settings" description="查看本地数据边界、备份策略和恢复预演入口。" />
+      <div className="security-summary" role="status">
+        <strong>本地优先</strong>
+        <span>作品、复盘和收入记录保存在当前设备；平台凭据不进入普通数据备份。</span>
+      </div>
+      <div className="settings-grid">
+        <article>
+          <span>本地数据目录</span>
+          <strong>Matrix Compass 数据目录</strong>
+          <small>安装时选择，和代码仓库保持分离。</small>
+        </article>
+        <article>
+          <span>备份策略</span>
+          <strong>关键操作前自动备份</strong>
+          <small>导入、升级和恢复前都会创建备份。</small>
+        </article>
+        <article>
+          <span>恢复预演</span>
+          <strong>先校验，再恢复</strong>
+          <small>恢复预演不会修改当前数据。</small>
+        </article>
+      </div>
+      <section className="security-actions" aria-label="备份与恢复操作">
+        <div><strong>需要立即备份？</strong><span>可通过本地 Skill 的备份命令生成可携带副本。</span></div>
+        <div><strong>需要恢复？</strong><span>先运行恢复预演，确认备份完整后再执行恢复。</span></div>
+      </section>
+    </section>
+  );
+}
 
 export function OperationsModule({ page }: { page: OperationsPage }) {
   if (page === "accounts") return <AccountsModule />;

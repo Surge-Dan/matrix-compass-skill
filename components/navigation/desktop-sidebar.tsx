@@ -20,7 +20,7 @@ export const OPERATIONS_NAVIGATION: Array<{
   { id: "accounts", label: "账号资产", icon: "◎" },
   { id: "reviews", label: "复盘实验", icon: "◇" },
   { id: "sources", label: "数据导入与同步", icon: "⇄" },
-  { id: "settings", label: "设置", icon: "⌘" },
+  { id: "settings", label: "备份与安全", icon: "⌘" },
 ];
 
 export function DesktopSidebar({
